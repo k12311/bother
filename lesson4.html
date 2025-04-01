@@ -322,16 +322,32 @@ document.getElementById("accuracy").textContent = `${accuracy}%`;
 }
 
 function speakWord() {
-  if (!currentWord.jp) return;
-  
-  // 停止上一次的朗讀，確保只唸一次
-  speechSynthesis.cancel(); 
-  
-  const utterance = new SpeechSynthesisUtterance(currentWord.jp);
-  utterance.lang = "ja-JP";
+  const speakText = currentWord.jp || "";
+  if (!speakText) return;
+
+  speechSynthesis.cancel(); // 停止其他語音
+
+  const utterance = new SpeechSynthesisUtterance(speakText);
+  utterance.lang = 'ja-JP';
+
+  const voices = speechSynthesis.getVoices();
+  const jpVoice = voices.find(voice => voice.lang === 'ja-JP');
+  if (jpVoice) {
+    utterance.voice = jpVoice;
+  }
+
   speechSynthesis.speak(utterance);
+
+  // 語音初始化
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = () => {};
+  }
 }
 
+// ✅ 把這段放在 script 最底下（函式外面）
+window.onload = () => {
+  document.getElementById("highscore").textContent = highscore;
+};
 </script>
 
 </body>
