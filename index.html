@@ -37,7 +37,7 @@
       font-size: 1.3rem;
       color: #5b3a00;
       margin: 1rem 0;
-      min-height: 2rem;
+      min-height: 2.5rem;
     }
     .badge {
       display: inline-block;
@@ -67,9 +67,9 @@
       margin-bottom: 1rem;
       color: #8c6d1f;
     }
-    #countdownTimer, #reminderInfo {
-      min-height: 1.6em;
+    #countdownTimer, #reminderInfo, #todayGameInfo, #nextGameInfo {
       font-family: monospace;
+      min-height: 1.6rem;
     }
   </style>
 </head>
@@ -87,8 +87,8 @@
   <!-- 📆 比賽資訊區 -->
   <div class="section">
     <h2>📆 今天比賽 & 下場比賽</h2>
-    <div id="todayGameInfo">查詢中...</div>
-    <div id="nextGameInfo">查詢中...</div>
+    <div id="todayGameInfo"></div>
+    <div id="nextGameInfo"></div>
     <div id="countdownTimer"></div>
     <div id="reminderInfo"></div>
   </div>
@@ -152,20 +152,17 @@
       const todayStr = today.toISOString().split("T")[0];
       const todayGame = gameList.find(g => g.date === todayStr);
       const now = new Date();
+
       const todayEl = document.getElementById("todayGameInfo");
       const nextEl = document.getElementById("nextGameInfo");
       const countdownEl = document.getElementById("countdownTimer");
       const reminderEl = document.getElementById("reminderInfo");
 
-      if (todayGame) {
-        todayEl.innerText = `📍 今天有比賽：${todayGame.date} ${todayGame.time} ${todayGame.team}`;
-      } else {
-        todayEl.innerText = "📍 今天無比賽";
-      }
+      const todayText = todayGame ? `📍 今天有比賽：${todayGame.date} ${todayGame.time} ${todayGame.team}` : "📍 今天無比賽";
+      if (todayEl.innerText !== todayText) todayEl.innerText = todayText;
 
       const nextGame = gameList.find(g => new Date(`${g.date}T${g.time}`) > now);
       if (nextGame) {
-        nextEl.innerText = `⏭️ 下場比賽：${nextGame.date} ${nextGame.time} ${nextGame.team}`;
         const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
         const diff = targetTime - now;
         const minutes = Math.floor(diff / (1000 * 60));
@@ -173,8 +170,13 @@
         const m = Math.floor((diff / (1000 * 60)) % 60);
         const s = Math.floor((diff / 1000) % 60);
 
-        countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
-        reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+        const nextText = `⏭️ 下場比賽：${nextGame.date} ${nextGame.time} ${nextGame.team}`;
+        const countdownText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+        const reminderText = `⏰ 距離開打：${minutes} 分鐘`;
+
+        if (nextEl.innerText !== nextText) nextEl.innerText = nextText;
+        if (countdownEl.innerText !== countdownText) countdownEl.innerText = countdownText;
+        if (reminderEl.innerText !== reminderText) reminderEl.innerText = reminderText;
 
         if (minutes === 30 && !notified && Notification.permission === "granted") {
           new Notification("🐘 比賽提醒", {
