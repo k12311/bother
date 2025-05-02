@@ -90,6 +90,7 @@
   <div class="section">
     <h2>📣 Firebase 推播 Token</h2>
     <div id="fcm-token">尚未註冊通知權限</div>
+    <button onclick="requestPushPermission()">🔔 啟用通知</button>
   </div>
 
   <div class="section">
@@ -98,6 +99,19 @@
     <div id="nextGameInfo"></div>
     <div id="countdownTimer"></div>
     <div id="reminderInfo"></div>
+  </div>
+
+  <div class="section">
+    <h2>⏰ 提醒設定</h2>
+    <label>幾分鐘前提醒：
+      <select id="reminderSelect">
+        <option value="5">5 分</option>
+        <option value="15">15 分</option>
+        <option value="30" selected>30 分</option>
+        <option value="60">60 分</option>
+      </select>
+    </label>
+    <p id="reminderStatus"></p>
   </div>
 
   <div class="section">
@@ -121,6 +135,11 @@
     </div>
   </div>
 
+  <div class="section">
+    <h2>💖 收藏語錄清單</h2>
+    <div id="favoriteQuoteList">尚無收藏語錄</div>
+  </div>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB4DjxxWFZvaN54loy0fzo010sxslXfMeg",
@@ -133,6 +152,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
+
     navigator.serviceWorker.register("firebase-messaging-sw.js").then(reg => {
       messaging.useServiceWorker(reg);
       messaging.requestPermission()
@@ -140,6 +160,19 @@
         .then(token => document.getElementById("fcm-token").innerText = token)
         .catch(() => document.getElementById("fcm-token").innerText = "❌ 無法取得通知權限");
     });
+
+    function requestPushPermission() {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("✅ 已允許通知，請重新整理頁面。");
+          location.reload();
+        } else if (permission === "denied") {
+          alert("❌ 你拒絕了通知，請從瀏覽器設定中手動開啟！");
+        } else {
+          alert("⚠️ 尚未選擇通知權限，請再試一次！");
+        }
+      });
+    }
 
     const quotes = [
       "不拚怎麼會贏！ — 王勝偉",
@@ -160,6 +193,8 @@
       { date: "2025-05-05", time: "18:35", team: "vs 樂天桃猿（客場）" }
     ];
 
+    let notified = false;
+
     function getTodayQuote() {
       const today = new Date();
       const index = today.getDate() % quotes.length;
@@ -178,6 +213,7 @@
       }
       localStorage.setItem("favoriteQuotes", JSON.stringify(favs));
       if (favs.length >= 5) addBadge("⭐ 語錄收藏達人章");
+      renderFavoriteQuotes();
     }
 
     function challengeQuote() {
@@ -216,12 +252,15 @@
         countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
         reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
 
-        if (minutes === 30 && Notification.permission === "granted") {
+        const userSetMinutes = parseInt(localStorage.getItem("reminderMinutes") || "30");
+        if (minutes === userSetMinutes && Notification.permission === "granted" && !notified) {
           new Notification("🐘 比賽提醒", {
-            body: `距離比賽只剩 30 分鐘！${nextGame.team}`,
+            body: `距離比賽只剩 ${userSetMinutes} 分鐘！${nextGame.team}`,
             icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
           });
+          notified = true;
         }
+        if (minutes > userSetMinutes) notified = false;
       } else {
         nextEl.innerText = "⏭️ 無下場比賽";
         countdownEl.innerText = "";
@@ -250,12 +289,48 @@
       }
     }
 
+    const reminderSelect = document.getElementById("reminderSelect");
+    const reminderStatus = document.getElementById("reminderStatus");
+    reminderSelect.addEventListener("change", () => {
+      const selected = reminderSelect.value;
+      localStorage.setItem("reminderMinutes", selected);
+      reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${selected} 分鐘`;
+    });
+    const savedReminder = localStorage.getItem("reminderMinutes") || "30";
+    reminderSelect.value = savedReminder;
+    reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${savedReminder} 分鐘`;
+
+    function renderFavoriteQuotes() {
+      const favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
+      const box = document.getElementById("favoriteQuoteList");
+      if (favs.length === 0) {
+        box.innerText = "尚無收藏語錄";
+        return;
+      }
+      let html = "";
+      for (let i of favs) {
+        const quote = quotes[i];
+        html += `<div><span>💬 ${quote}</span> <button onclick="removeFavoriteQuote(${i})">❌ 移除</button></div>`;
+      }
+      box.innerHTML = html;
+    }
+
+    function removeFavoriteQuote(index) {
+      let favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
+      favs = favs.filter(i => i != index);
+      localStorage.setItem("favoriteQuotes", JSON.stringify(favs));
+      renderFavoriteQuotes();
+    }
+
     getTodayQuote();
     loadGameInfo();
     setInterval(loadGameInfo, 1000);
     showSupportDays();
+    renderFavoriteQuotes();
   </script>
 </body>
+</html>
+
 </html>
 
 
