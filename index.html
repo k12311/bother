@@ -22,6 +22,7 @@
       padding: 1rem;
       max-width: 520px;
       box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      min-height: 100px;
     }
     .button {
       background: #ffd666;
@@ -36,6 +37,7 @@
       font-size: 1.3rem;
       color: #5b3a00;
       margin: 1rem 0;
+      min-height: 2rem;
     }
     .badge {
       display: inline-block;
@@ -65,6 +67,10 @@
       margin-bottom: 1rem;
       color: #8c6d1f;
     }
+    #countdownTimer, #reminderInfo {
+      min-height: 1.6em;
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
@@ -72,13 +78,19 @@
   <h1>🐘 中信兄弟 APP 首頁</h1>
   <div class="date-display" id="todayDate"></div>
 
+  <!-- 📜 今日語錄 -->
+  <div class="section">
+    <h2>📜 今日語錄</h2>
+    <div class="quote" id="dailyQuote">載入中...</div>
+  </div>
+
   <!-- 📆 比賽資訊區 -->
   <div class="section">
     <h2>📆 今天比賽 & 下場比賽</h2>
     <div id="todayGameInfo">查詢中...</div>
     <div id="nextGameInfo">查詢中...</div>
-    <div id="countdownTimer" style="font-size: 1.4rem; color:#fa8c16; font-weight:bold;"></div>
-    <div id="reminderInfo" style="margin-top: 0.5rem; color:#d46b08;"></div>
+    <div id="countdownTimer"></div>
+    <div id="reminderInfo"></div>
   </div>
 
   <!-- 🗓️ 支持兄弟第幾天 -->
@@ -112,6 +124,27 @@
       { date: "2025-05-05", time: "18:35", team: "vs 樂天桃猿（客場）" }
     ];
 
+    const quotes = [
+      "不拚怎麼會贏！ — 王勝偉",
+      "每一場球，都是一次證明自己的機會。",
+      "兄弟就是一輩子的信仰。",
+      "球來就打，爪來就上！",
+      "相信隊友，也相信自己。",
+      "輸贏是過程，拼盡全力是信仰。",
+      "用汗水寫下榮耀的名字。",
+      "不是最強，但最團結。",
+      "跌倒沒關係，站起來再拼就對了。",
+      "讓我們一起把主場守住！"
+    ];
+
+    function getTodayQuote() {
+      const today = new Date();
+      const index = today.getDate() % quotes.length;
+      document.getElementById("dailyQuote").innerText = quotes[index];
+    }
+
+    let notified = false;
+
     function loadGameInfo() {
       const today = new Date();
       document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
@@ -135,18 +168,22 @@
         nextEl.innerText = `⏭️ 下場比賽：${nextGame.date} ${nextGame.time} ${nextGame.team}`;
         const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
         const diff = targetTime - now;
+        const minutes = Math.floor(diff / (1000 * 60));
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
 
-        if (diff <= 0) {
-          countdownEl.innerText = "比賽開始！";
-          reminderEl.innerText = "";
-        } else {
-          const minutes = Math.floor(diff / (1000 * 60));
-          const h = Math.floor(diff / (1000 * 60 * 60));
-          const m = Math.floor((diff / (1000 * 60)) % 60);
-          const s = Math.floor((diff / 1000) % 60);
-          countdownEl.innerText = `倒數：${h}時 ${m}分 ${s}秒`;
-          reminderEl.innerText = `⏰ 距離比賽開始還有 ${minutes} 分鐘`;
+        countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+        reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+
+        if (minutes === 30 && !notified && Notification.permission === "granted") {
+          new Notification("🐘 比賽提醒", {
+            body: `距離比賽只剩 30 分鐘！${nextGame.team}`,
+            icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
+          });
+          notified = true;
         }
+        if (minutes > 30) notified = false;
       } else {
         nextEl.innerText = "⏭️ 無下場比賽";
         countdownEl.innerText = "";
@@ -175,13 +212,15 @@
       }
     }
 
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    getTodayQuote();
     loadGameInfo();
     setInterval(loadGameInfo, 1000);
     showSupportDays();
   </script>
 </body>
 </html>
-
-
-
 
