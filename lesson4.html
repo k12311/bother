@@ -1,354 +1,184 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>第4課～第6課 自選單字練習</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中信兄弟 APP 首頁</title>
   <style>
     body {
-      font-family: "Helvetica Neue", sans-serif;
-      background-color: #ffe4f0;
-      color: #333;
-      padding: 20px;
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #fffbe6;
       text-align: center;
+      padding: 1.2rem;
     }
-    .lesson {
-      background: #fff0f5;
-      padding: 10px;
-      margin: 20px auto;
-      width: fit-content;
+    h1 {
+      color: #d48806;
+    }
+    .section {
+      background: #fff;
+      border: 2px solid #ffd666;
       border-radius: 12px;
-      text-align: left;
+      margin: 1.5rem auto;
+      padding: 1rem;
+      max-width: 520px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
     }
-    .lesson h3 {
-      margin-top: 0;
-    }
-    .option-button {
-      background-color: #fff;
-      margin: 5px;
-      padding: 10px 20px;
-      border: 2px solid #ff99cc;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button {
-      padding: 10px 16px;
-      margin: 10px;
+    .button {
+      background: #ffd666;
       border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
       border-radius: 8px;
-      font-size: 16px;
-      background-color: #ffccdd;
       cursor: pointer;
+      margin-top: 0.5rem;
     }
-    #result {
-      margin-top: 10px;
-      font-size: 18px;
+    .quote {
+      font-size: 1.3rem;
+      color: #5b3a00;
+      margin: 1rem 0;
+    }
+    .badge {
+      display: inline-block;
+      background: #ffd666;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
       font-weight: bold;
+      color: #000;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+      margin-top: 1rem;
     }
-    #question {
-      font-size: 22px;
-      margin: 20px 0;
+    .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
     }
-    #quizArea {
-      margin-top: 30px;
-      padding: 20px;
-      background: #fffafc;
-      border-radius: 12px;
+    .photo-grid img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #ffd666;
+    }
+    .date-display {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #8c6d1f;
     }
   </style>
 </head>
 <body>
-  <h1>第4～6課 自選單字練習</h1>
 
-  <div>
-    題目方向：
-    <select id="modeSelect" onchange="changeMode()">
-      <option value="jpToZh">日文 ➡ 中文（預設）</option>
-      <option value="zhToJp">中文 ➡ 日文</option>
-    </select>
+  <h1>🐘 中信兄弟 APP 首頁</h1>
+  <div class="date-display" id="todayDate"></div>
+
+  <!-- 📆 比賽資訊區 -->
+  <div class="section">
+    <h2>📆 今天比賽 & 下場比賽</h2>
+    <div id="todayGameInfo">查詢中...</div>
+    <div id="nextGameInfo">查詢中...</div>
+    <div id="countdownTimer" style="font-size: 1.4rem; color:#fa8c16; font-weight:bold;"></div>
+    <div id="reminderInfo" style="margin-top: 0.5rem; color:#d46b08;"></div>
   </div>
 
-    選擇課次：
-    <select id="lessonSelect" onchange="updateWordList()">
-      <option value="">-- 請選擇課次 --</option>
-      <option value="第4課">第4課</option>
-      <option value="第5課">第5課</option>
-      <option value="第6課">第6課</option> <!-- Added 第6課 -->
-    </select>
+  <!-- 🗓️ 支持兄弟第幾天 -->
+  <div class="section">
+    <h2>🗓️ 我支持兄弟第幾天？</h2>
+    <div id="fixedDaysResult">載入中...</div>
+    <div id="specialBadge"></div>
   </div>
 
-  <div id="wordSelection"></div>
+  <!-- 🏅 解鎖徽章清單 -->
+  <div class="section">
+    <h2>🏅 任務徽章</h2>
+    <div id="badgeList"></div>
+  </div>
 
-  <button onclick="startQuiz()">▶️ 開始測驗</button>
-  <button onclick="unlockSelection()">🔁 重新選單字</button>
-
- <div id="quizArea">
-  <div id="question">← 點上方按鈕開始練習</div>
-  <div id="options"></div>
-  <div id="result"></div>
- <div>
-  分數：<span id="score">0</span><br>
-  最高分：<span id="highscore">0</span><br>
-  答對率：<span id="accuracy">0%</span>（<span id="correct">0</span> / <span id="total">0</span> 題）
-</div>
-  <button onclick="speakWord()">🔊 朗讀日文</button>
-  <button onclick="resetScore()">🔁 重置分數</button>
-</div>
-
-<!-- ✅ 放在 quizArea 下方 -->
-<div id="endScreen" style="display: none; margin-top: 20px; text-align: center;">
-  <h3>🎉 測驗完成！</h3>
-  <p>你的總得分是：<span id="finalScore">0</span> 分</p>
-  <button onclick="goHome()">🔙 回首頁</button>
-</div>
+  <!-- 📸 假資料照片牆 -->
+  <div class="section">
+    <h2>📸 球迷照片牆</h2>
+    <div class="photo-grid">
+      <img src="https://picsum.photos/seed/a/100" alt="photo1">
+      <img src="https://picsum.photos/seed/b/100" alt="photo2">
+      <img src="https://picsum.photos/seed/c/100" alt="photo3">
+      <img src="https://picsum.photos/seed/d/100" alt="photo4">
+    </div>
+  </div>
 
   <script>
-function goHome() {
-  document.getElementById("endScreen").style.display = "none";
-  document.getElementById("quizArea").style.display = "block";
-  document.getElementById("wordSelection").style.display = "block";
-  document.getElementById("question").textContent = "← 點上方按鈕開始練習";
-  document.getElementById("options").innerHTML = "";
-  document.getElementById("result").textContent = "";
-  score = 0;
-  document.getElementById("score").textContent = score;
-}
-    const allLessons = {
-      "第4課": [
-        { jp: "起きます", zh: "起床" }, { jp: "寝ます", zh: "睡覺" }, { jp: "働きます", zh: "工作" },
-        { jp: "休みます", zh: "休息" }, { jp: "勉強します", zh: "讀書、學習" }, { jp: "終わります", zh: "結束" },
-        { jp: "デパート", zh: "百貨公司" }, { jp: "銀行（ぎんこう）", zh: "銀行" }, { jp: "郵便局（ゆうびんきょく）", zh: "郵局" },
-        { jp: "図書館（としょかん）", zh: "圖書館" }, { jp: "美術館（びじゅつかん）", zh: "美術館" }, { jp: "今（いま）", zh: "現在" },
-        { jp: "～時（じ）", zh: "～點" }, { jp: "～分（ふん / ぷん）", zh: "～分" }, { jp: "午前（ごぜん）", zh: "上午" },
-        { jp: "午後（ごご）", zh: "下午" }, { jp: "朝（あさ）", zh: "早上" }, { jp: "昼（ひる）", zh: "中午" },
-        { jp: "晩（ばん）/ 夜（よる）", zh: "晚上" }, { jp: "休み", zh: "休假" }, { jp: "昼休み（ひるやすみ）", zh: "午休" },
-        { jp: "毎朝（まいあさ）", zh: "每天早上" }, { jp: "毎晩（まいばん）", zh: "每天晚上" }, { jp: "毎日（まいにち）", zh: "每天" },
-        { jp: "月曜日（げつようび）", zh: "星期一" }, { jp: "火曜日（かようび）", zh: "星期二" }, { jp: "水曜日（すいようび）", zh: "星期三" },
-        { jp: "木曜日（もくようび）", zh: "星期四" }, { jp: "金曜日（きんようび）", zh: "星期五" }, { jp: "土曜日（どようび）", zh: "星期六" },
-        { jp: "日曜日（にちようび）", zh: "星期日" }, { jp: "何曜日（なんようび）", zh: "星期幾" }, { jp: "番号（ばんごう）", zh: "號碼" },
-        { jp: "何番（なんばん）", zh: "幾號" }, { jp: "～から", zh: "從～" }, { jp: "～まで", zh: "到～" },
-        { jp: "～と～", zh: "～和～" }, { jp: "大変ですね（たいへんですね）", zh: "你真辛苦啊" }, { jp: "えーと", zh: "那個…" },
-        { jp: "おねがいします", zh: "麻煩你了" }, { jp: "かしこまりました", zh: "我知道了" }, { jp: "おといあわせのばんごう", zh: "您查詢的號碼是…" },
-        { jp: "どうもありがとうございました", zh: "非常感謝您" }
-      ],
-      "第5課": [
-        { jp: "行きます", zh: "去" }, { jp: "来ます", zh: "來" }, { jp: "帰ります", zh: "回去" },
-        { jp: "学校（がっこう）", zh: "學校" }, { jp: "駅（えき）", zh: "車站" }, { jp: "飛行機（ひこうき）", zh: "飛機" },
-        { jp: "船（ふね）", zh: "船" }, { jp: "電車（でんしゃ）", zh: "電車" }, { jp: "地下鉄（ちかてつ）", zh: "地下鐵" },
-        { jp: "新幹線（しんかんせん）", zh: "新幹線" }, { jp: "バス", zh: "巴士" }, { jp: "タクシー", zh: "計程車" },
-        { jp: "自転車（じてんしゃ）", zh: "腳踏車" }, { jp: "歩いて（あるいて）", zh: "走路" }, { jp: "人（ひと）", zh: "人" },
-        { jp: "友達（ともだち）", zh: "朋友" }, { jp: "彼（かれ）", zh: "他／男朋友" }, { jp: "彼女（かのじょ）", zh: "她／女朋友" },
-        { jp: "家族（かぞく）", zh: "家人" }, { jp: "一人で（ひとりで）", zh: "一個人" }, { jp: "先週（せんしゅう）", zh: "上週" },
-        { jp: "今週（こんしゅう）", zh: "這週" }, { jp: "来週（らいしゅう）", zh: "下週" }, { jp: "先月（せんげつ）", zh: "上個月" },
-        { jp: "今月（こんげつ）", zh: "這個月" }, { jp: "来月（らいげつ）", zh: "下個月" }, { jp: "去年（きょねん）", zh: "去年" },
-        { jp: "今年（ことし）", zh: "今年" }, { jp: "来年（らいねん）", zh: "明年" }, { jp: "～月（がつ）", zh: "～月" },
-        { jp: "何月（なんがつ）", zh: "幾月" }, { jp: "～日（にち）", zh: "～號／～天" }, { jp: "何日（なんにち）", zh: "幾號／幾天" },
-        { jp: "いつ", zh: "什麼時候" }, { jp: "誕生日（たんじょうび）", zh: "生日" }, { jp: "普通（ふつう）", zh: "普通（車）" },
-        { jp: "急行（きゅうこう）", zh: "快車" }, { jp: "特急（とっきゅう）", zh: "特快車" }, { jp: "ありがとう ございました", zh: "謝謝（過去式）" },
-        { jp: "どういたしまして", zh: "不客氣" }
-      ],
-      "第6課": [
-        { jp: "買います", zh: "買" }, { jp: "売ります", zh: "賣" }, { jp: "取ります", zh: "拿" },
-        { jp: "書きます", zh: "寫" }, { jp: "読みます", zh: "讀" }, { jp: "聞きます", zh: "聽" },
-        { jp: "見ます", zh: "看" }, { jp: "電話します", zh: "打電話" }, { jp: "歩きます", zh: "走路" },
-        { jp: "遊びます", zh: "玩" }, { jp: "泳ぎます", zh: "游泳" }, { jp: "寝ます", zh: "睡覺" },
-        { jp: "起きます", zh: "起床" }, { jp: "食べます", zh: "吃" }, { jp: "飲みます", zh: "喝" },
-        { jp: "昼食", zh: "午餐" }, { jp: "晩御飯", zh: "晚餐" }, { jp: "朝食", zh: "早餐" },
-        { jp: "ホテル", zh: "飯店" }, { jp: "レストラン", zh: "餐廳" }, { jp: "コーヒー", zh: "咖啡" },
-        { jp: "紅茶", zh: "紅茶" }, { jp: "ジュース", zh: "果汁" }, { jp: "ビール", zh: "啤酒" },
-        { jp: "パン", zh: "麵包" }, { jp: "ご飯", zh: "飯" }, { jp: "野菜", zh: "蔬菜" },
-        { jp: "果物", zh: "水果" }, { jp: "肉", zh: "肉" }, { jp: "魚", zh: "魚" },
-        { jp: "卵", zh: "蛋" }
-      ]
-    };
-    let lockedWords = [];
-    let currentWord = {};
-    let score = 0;
-    let highscore = localStorage.getItem("highscore") || 0;
-    let mode = "jpToZh";
-    document.getElementById("highscore").textContent = highscore;
-    let correctCount = 0;
-    let totalCount = 0;
+    const gameList = [
+      { date: "2025-05-02", time: "18:35", team: "vs 富邦悍將（主場）" },
+      { date: "2025-05-03", time: "17:05", team: "vs 富邦悍將（主場）" },
+      { date: "2025-05-05", time: "18:35", team: "vs 樂天桃猿（客場）" }
+    ];
 
-    function changeMode() {
-      mode = document.getElementById("modeSelect").value;
-    }
+    function loadGameInfo() {
+      const today = new Date();
+      document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
 
-    function updateWordList() {
-      const selectedLesson = document.getElementById("lessonSelect").value;
-      const container = document.getElementById("wordSelection");
-      container.innerHTML = "";
+      const todayStr = today.toISOString().split("T")[0];
+      const todayGame = gameList.find(g => g.date === todayStr);
+      const now = new Date();
+      const todayEl = document.getElementById("todayGameInfo");
+      const nextEl = document.getElementById("nextGameInfo");
+      const countdownEl = document.getElementById("countdownTimer");
+      const reminderEl = document.getElementById("reminderInfo");
 
-      if (!selectedLesson || !allLessons[selectedLesson]) return;
-
-      const wordList = allLessons[selectedLesson];
-      const div = document.createElement("div");
-      div.className = "lesson";
-      const idPrefix = selectedLesson.replace("第", "lesson").replace("課", "");
-      div.innerHTML = `<h3>${selectedLesson} <button onclick="uncheckAll('${idPrefix}')">全部取消</button></h3>`;
-      wordList.forEach((word, i) => {
-        const id = `${idPrefix}_word${i}`;
-        div.innerHTML += `<label><input type="checkbox" id="${id}" value="${word.jp}" checked> ${word.jp}（${word.zh}）</label><br>`;
-      });
-      container.appendChild(div);
-    }
-
-    function uncheckAll(prefix) {
-      const checkboxes = document.querySelectorAll(`input[id^="${prefix}_"]`);
-      checkboxes.forEach(cb => cb.checked = false);
-    }
-
-    function getSelectedWords() {
-      const selected = [];
-      const lesson = document.getElementById("lessonSelect").value;
-      const wordList = allLessons[lesson];
-      const prefix = lesson.replace("第", "lesson").replace("課", "");
-      wordList.forEach((word, i) => {
-        const id = `${prefix}_word${i}`;
-        const checkbox = document.getElementById(id);
-        if (checkbox && checkbox.checked) {
-          selected.push(word);
-        }
-      });
-      return selected;
-    }
-
-    function startQuiz() {
-      const selected = getSelectedWords();
-      if (selected.length === 0) {
-        alert("請至少選一個單字！");
-        return;
+      if (todayGame) {
+        todayEl.innerText = `📍 今天有比賽：${todayGame.date} ${todayGame.time} ${todayGame.team}`;
+      } else {
+        todayEl.innerText = "📍 今天無比賽";
       }
-      lockedWords = selected;
-      document.getElementById("wordSelection").style.display = "none";
-      showNewQuestion();
+
+      const nextGame = gameList.find(g => new Date(`${g.date}T${g.time}`) > now);
+      if (nextGame) {
+        nextEl.innerText = `⏭️ 下場比賽：${nextGame.date} ${nextGame.time} ${nextGame.team}`;
+        const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
+        const diff = targetTime - now;
+
+        if (diff <= 0) {
+          countdownEl.innerText = "比賽開始！";
+          reminderEl.innerText = "";
+        } else {
+          const minutes = Math.floor(diff / (1000 * 60));
+          const h = Math.floor(diff / (1000 * 60 * 60));
+          const m = Math.floor((diff / (1000 * 60)) % 60);
+          const s = Math.floor((diff / 1000) % 60);
+          countdownEl.innerText = `倒數：${h}時 ${m}分 ${s}秒`;
+          reminderEl.innerText = `⏰ 距離比賽開始還有 ${minutes} 分鐘`;
+        }
+      } else {
+        nextEl.innerText = "⏭️ 無下場比賽";
+        countdownEl.innerText = "";
+        reminderEl.innerText = "";
+      }
     }
 
-    function unlockSelection() {
-      document.getElementById("wordSelection").style.display = "block";
-      lockedWords = [];
-      document.getElementById("question").textContent = "← 點上方按鈕開始練習";
-      document.getElementById("options").innerHTML = "";
-      document.getElementById("result").textContent = "";
+    function showSupportDays() {
+      const startDate = new Date("2024-11-24");
+      const today = new Date();
+      const diffTime = today - startDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      document.getElementById("fixedDaysResult").innerText = `你支持兄弟已經第 ${diffDays} 天啦 💛`;
+      const matchDates = ["2024-11-24"];
+      const startStr = startDate.toISOString().split("T")[0];
+      if (matchDates.includes(startStr)) {
+        document.getElementById("specialBadge").innerHTML = `<span class="badge">🎖️ 特殊徽章：你在比賽日加入兄弟陣營！</span>`;
+        addBadge("比賽日加入章");
+      }
     }
 
-    function showNewQuestion() {
-  // 隨機從勾選單字中出一題
-  currentWord = lockedWords[Math.floor(Math.random() * lockedWords.length)];
-  const selectedLesson = document.getElementById("lessonSelect").value;
-  const fullLessonWords = allLessons[selectedLesson];
-
-  const questionText = mode === "jpToZh"
-    ? `「${currentWord.jp}」是什麼意思？`
-    : `「${currentWord.zh}」的日文是什麼？`;
-  document.getElementById("question").textContent = questionText;
-  document.getElementById("result").textContent = "";
-
-  const correctAnswer = mode === "jpToZh" ? currentWord.zh : currentWord.jp;
-
-  // 從整課中抽出錯誤選項（排除正解）
-  let optionsPool = fullLessonWords
-    .map(w => mode === "jpToZh" ? w.zh : w.jp)
-    .filter(opt => opt !== correctAnswer);
-
-  // 抽 3 個錯誤 + 正確答案
-  const options = shuffle([correctAnswer, ...shuffle(optionsPool).slice(0, 3)]);
-
-  // 顯示選項按鈕
-  const optionsDiv = document.getElementById("options");
-  optionsDiv.innerHTML = "";
-  options.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.textContent = opt;
-    btn.className = "option-button";
-    btn.onclick = () => checkAnswer(opt);
-    optionsDiv.appendChild(btn);
-  });
-}
-
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
+    function addBadge(name) {
+      const badgeBox = document.getElementById("badgeList");
+      if (!badgeBox.innerHTML.includes(name)) {
+        badgeBox.innerHTML += `<div class="badge">${name}</div>`;
+      }
     }
 
-    function checkAnswer(answer) {
-  const correct = mode === "jpToZh" ? currentWord.zh : currentWord.jp;
-  totalCount++;
-if (answer === correct) {
-  correctCount++;
-  document.getElementById("result").textContent = "✅ 正確！";
-  score += 10;
-} else {
-  document.getElementById("result").textContent = `❌ 錯了！正確答案是「${correct}」`;
-}
-
-// 更新答對率
-document.getElementById("correct").textContent = correctCount;
-document.getElementById("total").textContent = totalCount;
-const accuracy = Math.round((correctCount / totalCount) * 100);
-document.getElementById("accuracy").textContent = `${accuracy}%`;
-
-  document.getElementById("score").textContent = score;
-  if (score > highscore) {
-    highscore = score;
-    localStorage.setItem("highscore", highscore);
-    document.getElementById("highscore").textContent = highscore;
-  }
-
-  // 移除目前題目，避免重複
-  lockedWords = lockedWords.filter(word => word !== currentWord);
-
-  // 題目出完就顯示結束畫面
-  if (lockedWords.length === 0) {
-    document.getElementById("quizArea").style.display = "none";
-    document.getElementById("endScreen").style.display = "block";
-    document.getElementById("finalScore").textContent = score;
-  } else {
-    setTimeout(() => showNewQuestion(), 800);
-  }
-}
-
-
- function resetScore() {
-  score = 0;
-  correctCount = 0;
-  totalCount = 0;
-
-  document.getElementById("score").textContent = score;
-  document.getElementById("correct").textContent = 0;
-  document.getElementById("total").textContent = 0;
-  document.getElementById("accuracy").textContent = "0%";
-  document.getElementById("result").textContent = "";
-}
-
-function speakWord() {
-  const speakText = currentWord.jp || "";
-  if (!speakText) return;
-
-  speechSynthesis.cancel(); // 停止其他語音
-
-  const utterance = new SpeechSynthesisUtterance(speakText);
-  utterance.lang = 'ja-JP';
-
-  const voices = speechSynthesis.getVoices();
-  const jpVoice = voices.find(voice => voice.lang === 'ja-JP');
-  if (jpVoice) {
-    utterance.voice = jpVoice;
-  }
-
-  speechSynthesis.speak(utterance);
-
-  // 語音初始化
-  if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = () => {};
-  }
-}
-
-// ✅ 把這段放在 script 最底下（函式外面）
-window.onload = () => {
-  document.getElementById("highscore").textContent = highscore;
-};
-</script>
-
+    loadGameInfo();
+    setInterval(loadGameInfo, 1000);
+    showSupportDays();
+  </script>
 </body>
 </html>
 
