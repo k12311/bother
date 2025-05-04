@@ -149,9 +149,24 @@ const quotes = [
 ];
 
 const gameList = [
+  { date: "2025-05-02", time: "18:35", opponent: "台鋼雄鷹", location: "嘉義市", home: false },
+  { date: "2025-05-03", time: "18:35", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
   { date: "2025-05-04", time: "16:05", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
   { date: "2025-05-06", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
-  { date: "2025-05-07", time: "18:35", opponent: "統一獅", location: "洲際", home: true }
+  { date: "2025-05-07", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
+  { date: "2025-05-09", time: "18:35", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-10", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-11", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-13", time: "18:35", opponent: "味全龍", location: "天母", home: true },
+  { date: "2025-05-14", time: "18:35", opponent: "味全龍", location: "天母", home: true },
+  { date: "2025-05-16", time: "18:35", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-17", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-18", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-21", time: "18:35", opponent: "富邦悍將", location: "洲際", home: true },
+  { date: "2025-05-22", time: "18:35", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-23", time: "18:35", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-24", time: "17:05", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-25", time: "17:05", opponent: "統一獅", location: "台南", home: false }
 ];
 
 function formatMatchup(game) {
@@ -193,95 +208,93 @@ function renderFavoriteQuotes() {
   if (favs.length === 0) return box.innerText = "尚無收藏語錄";
   box.innerHTML = favs.map(i => `💬 ${quotes[i]}`).join("<br>");
 }
-
-function challengeQuote() {
-  let count = parseInt(localStorage.getItem("quoteChallenges") || "0") + 1;
-  localStorage.setItem("quoteChallenges", count);
-  if (count >= 10) addBadge("🧠 語錄挑戰達成章");
-  alert(`你已完成語錄挑戰 ${count} 次！`);
-}
-
 function showSupportDays() {
-  const startDate = new Date("2024-11-24");
-  const today = new Date();
-  const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-  document.getElementById("fixedDaysResult").innerText = `你支持兄弟已經第 ${diffDays} 天啦 💛`;
-}
+  const startDate = new Date("2024-11-24T00:00:00+08:00"); // 支持兄弟的開始日
+  const now = new Date();
+  const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 去除時分秒
+  const diffDays = Math.floor((localToday - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-function addBadge(name) {
-  const badgeBox = document.getElementById("badgeList");
-  if (!badgeBox.innerHTML.includes(name)) {
-    badgeBox.innerHTML += `<div class="badge">${name}</div>`;
-  }
+  document.getElementById("fixedDaysResult").innerHTML = `
+    📅 從 <b>2024 年 11 月 24 日</b> 開始支持兄弟<br>
+    💛 你已經陪兄弟走過 <b>${diffDays} 天</b> 啦！
+  `;
+
+  if (diffDays >= 100) addBadge("💪 百日兄弟魂");
 }
 
 function loadGameInfo() {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
   const now = new Date();
+  const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStr = `${localToday.getFullYear()}-${(localToday.getMonth() + 1).toString().padStart(2, '0')}-${localToday.getDate().toString().padStart(2, '0')}`;
 
   document.getElementById("todayDate").innerText =
-    `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
+    `📅 今天是 ${localToday.getFullYear()} 年 ${localToday.getMonth() + 1} 月 ${localToday.getDate()} 日`;
 
-  // 今天的比賽
-  const todayGame = gameList.find(g => g.date === todayStr);
   const todayEl = document.getElementById("todayGameInfo");
-  todayEl.innerHTML = todayGame
-    ? `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${getGameStyle(todayGame)}`
-    : "📍 今天無比賽";
-
-  // 下場比賽（排除今天）
-  const nextGame = gameList.find(g => {
-    const gameTime = new Date(`${g.date}T${g.time}+08:00`);
-    return gameTime > now && g.date !== todayStr;
-  });
-
   const nextEl = document.getElementById("nextGameInfo");
   const countdownEl = document.getElementById("countdownTimer");
   const reminderEl = document.getElementById("reminderInfo");
 
-  if (nextGame) {
-    const gameTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
-    const diff = gameTime - now;
-    const minutes = Math.floor(diff / (1000 * 60));
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff / (1000 * 60)) % 60);
-    const s = Math.floor((diff / 1000) % 60);
+  const todayGame = gameList.find(g => g.date === todayStr);
+  const upcomingGame = gameList.find(g => {
+    const gameTime = new Date(`${g.date}T${g.time}+08:00`);
+    return gameTime > now;
+  });
 
-    const isTodayGame = nextGame.date === todayStr;
-    const hasStarted = now >= gameTime;
-    const isEnded = now - gameTime > 3 * 60 * 60 * 1000;
+  // === 今天比賽狀態 ===
+  if (todayGame) {
+    todayEl.innerHTML = `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${getGameStyle(todayGame)}`;
+  } else {
+    todayEl.innerHTML = "📍 今天無比賽";
+  }
 
-    nextEl.innerHTML = `<hr style='border:none; border-top:1px dashed #ccc; margin: 1em 0;'>⏭️ <b>下場比賽</b>：${nextGame.date} ${nextGame.time}<br>${getGameStyle(nextGame)}`;
+  // === 下場比賽區塊（永遠顯示） ===
+  if (upcomingGame) {
+    nextEl.innerHTML = `<hr style='border:none; border-top:1px dashed #ccc; margin: 1em 0;'>⏭️ <b>下場比賽</b>：${upcomingGame.date} ${upcomingGame.time}<br>${getGameStyle(upcomingGame)}`;
+  } else {
+    nextEl.innerHTML = "⏭️ 無下場比賽";
+  }
 
-    if (isTodayGame && hasStarted) {
-      if (isEnded) {
-        countdownEl.innerText = `📴 ${formatMatchup(nextGame)} 比賽已結束`;
-      } else {
-        countdownEl.innerText = `📢 ${formatMatchup(nextGame)} 比賽開始了！`;
-      }
-      reminderEl.innerText = "";
+  // === 決定要倒數哪一場（今天優先） ===
+  const game = todayGame || upcomingGame;
+  if (!game) {
+    countdownEl.innerText = "⏳ 目前無任何比賽排程";
+    reminderEl.innerText = "";
+    return;
+  }
+
+  const gameTime = new Date(`${game.date}T${game.time}+08:00`);
+  const diff = gameTime - now;
+  const minutes = Math.floor(diff / (1000 * 60));
+  const h = Math.floor(diff / (1000 * 60 * 60));
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+
+  const isStarted = now >= gameTime;
+  const isEnded = now - gameTime > 3 * 60 * 60 * 1000;
+
+  if (isStarted) {
+    if (isEnded) {
+      countdownEl.innerText = `📴 ${formatMatchup(game)} 比賽已結束`;
     } else {
-      countdownEl.innerText = `⏳ 倒數 ${formatMatchup(nextGame)} 開打：${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
-      reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+      countdownEl.innerText = `📢 ${formatMatchup(game)} 比賽開始了！`;
     }
+    reminderEl.innerText = "";
+  } else {
+    countdownEl.innerText = `⏳ 倒數 ${formatMatchup(game)} 開打：${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+    reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
 
     const reminderMins = parseInt(localStorage.getItem("reminderMinutes") || "30");
     if (minutes === reminderMins && Notification.permission === "granted" && !window.notified) {
       new Notification("🐘 比賽提醒", {
-        body: `距離比賽只剩 ${reminderMins} 分鐘！${formatMatchup(nextGame)}`,
+        body: `距離比賽只剩 ${reminderMins} 分鐘！${formatMatchup(game)}`,
         icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
       });
       window.notified = true;
     }
     if (minutes > reminderMins) window.notified = false;
-  } else {
-    nextEl.innerHTML = "⏭️ 無下場比賽";
-    countdownEl.innerText = "";
-    reminderEl.innerText = "";
   }
 }
-
 const reminderSelect = document.getElementById("reminderSelect");
 const reminderStatus = document.getElementById("reminderStatus");
 reminderSelect.addEventListener("change", () => {
