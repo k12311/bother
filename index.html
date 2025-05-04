@@ -136,208 +136,194 @@
     <div id="favoriteQuoteList">尚無收藏語錄</div>
   </div>
 
-  <script>
-    const quotes = [
-      "不拚怎麼會贏！ — 王勝偉",
-      "每一場球，都是一次證明自己的機會。",
-      "兄弟就是一輩子的信仰。",
-      "球來就打，爪來就上！",
-      "相信隊友，也相信自己。",
-      "輸贏是過程，拼盡全力是信仰。",
-      "用汗水寫下榮耀的名字。",
-      "不是最強，但最團結。",
-      "跌倒沒關係，站起來再拼就對了。",
-      "讓我們一起把主場守住！"
-    ];
+<script>
+  const quotes = [
+    "不拚怎麼會贏！ — 王勝偉",
+    "每一場球，都是一次證明自己的機會。",
+    "兄弟就是一輩子的信仰。",
+    "球來就打，爪來就上！",
+    "相信隊友，也相信自己。",
+    "輸贏是過程，拼盡全力是信仰。",
+    "用汗水寫下榮耀的名字。",
+    "不是最強，但最團結。",
+    "跌倒沒關係，站起來再拼就對了。",
+    "讓我們一起把主場守住！"
+  ];
 
-   const gameList = [
-  { date: "2025-05-02", time: "18:35", opponent: "台鋼雄鷹", location: "嘉義市", home: false },
-  { date: "2025-05-03", time: "18:35", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
-  { date: "2025-05-04", time: "16:05", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
-  { date: "2025-05-06", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
-  { date: "2025-05-07", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
-  { date: "2025-05-09", time: "18:35", opponent: "台鋼雄鷹", location: "洲際", home: true },
-  { date: "2025-05-10", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
-  { date: "2025-05-11", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
-  { date: "2025-05-13", time: "18:35", opponent: "味全龍", location: "天母", home: true },
-  { date: "2025-05-14", time: "18:35", opponent: "味全龍", location: "天母", home: true },
-  { date: "2025-05-16", time: "18:35", opponent: "樂天桃猿", location: "洲際", home: true },
-  { date: "2025-05-17", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
-  { date: "2025-05-18", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
-  { date: "2025-05-21", time: "18:35", opponent: "富邦悍將", location: "洲際", home: true },
-  { date: "2025-05-22", time: "18:35", opponent: "統一獅", location: "台南", home: false },
-  { date: "2025-05-23", time: "18:35", opponent: "統一獅", location: "台南", home: false },
-  { date: "2025-05-24", time: "17:05", opponent: "統一獅", location: "台南", home: false },
-  { date: "2025-05-25", time: "17:05", opponent: "統一獅", location: "台南", home: false }
-];
+  const gameList = [
+    { date: "2025-05-04", time: "16:05", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
+    { date: "2025-05-06", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
+    { date: "2025-05-07", time: "18:35", opponent: "統一獅", location: "洲際", home: true }
+  ];
 
-    let notified = false;
+  function formatMatchup(game) {
+    return game.home
+      ? `中信兄弟 vs ${game.opponent}（${game.location}）`
+      : `中信兄弟 @ ${game.opponent}（${game.location}）`;
+  }
 
-   function formatMatchup(game) {
-  return game.home
-    ? `中信兄弟 vs ${game.opponent}（${game.location}）`
-    : `中信兄弟 @ ${game.opponent}（${game.location}）`;
-}
+  function getGameStyle(game) {
+    const isHome = game.home;
+    const emoji = isHome ? "🏠" : "🚌";
+    const bg = isHome ? "#fff4cc" : "#f0f0f0";
+    const color = isHome ? "#000" : "#555";
+    const text = `${emoji} ${formatMatchup(game)}`;
+    return `<span style="
+      display: inline-block;
+      background: ${bg};
+      color: ${color};
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: bold;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+      margin-top: 6px;">
+      ${text}
+    </span>`;
+  }
 
-    function getTodayQuote() {
-      const today = new Date();
-      const index = today.getDate() % quotes.length;
-      const quote = quotes[index];
-      document.getElementById("dailyQuote").innerText = quote;
-      localStorage.setItem("currentQuoteIndex", index);
-    }
+  function loadGameInfo() {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+    const now = new Date();
 
-    function toggleFavoriteQuote() {
-      const index = localStorage.getItem("currentQuoteIndex");
-      let favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
-      if (favs.includes(index)) {
-        favs = favs.filter(i => i !== index);
-      } else {
-        favs.push(index);
+    document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
+
+    const todayGame = gameList.find(g => g.date === todayStr);
+    const nextGame = gameList.find(g => {
+      const gameTime = new Date(`${g.date}T${g.time}`);
+      return gameTime > now && g.date !== todayStr;
+    });
+
+    const todayEl = document.getElementById("todayGameInfo");
+    const nextEl = document.getElementById("nextGameInfo");
+    const countdownEl = document.getElementById("countdownTimer");
+    const reminderEl = document.getElementById("reminderInfo");
+
+    todayEl.innerHTML = todayGame
+      ? `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${getGameStyle(todayGame)}`
+      : "📍 今天無比賽";
+
+    if (nextGame) {
+      const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
+      const diff = targetTime - now;
+      const minutes = Math.floor(diff / (1000 * 60));
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+
+      nextEl.innerHTML = `<hr style='border:none; border-top:1px dashed #ccc; margin: 1em 0;'>
+        ⏭️ <b>下場比賽</b>：${nextGame.date} ${nextGame.time}<br>${getGameStyle(nextGame)}`;
+
+      countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+      reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+
+      const userSetMinutes = parseInt(localStorage.getItem("reminderMinutes") || "30");
+      if (minutes === userSetMinutes && Notification.permission === "granted" && !window.notified) {
+        new Notification("🐘 比賽提醒", {
+          body: `距離比賽只剩 ${userSetMinutes} 分鐘！${formatMatchup(nextGame)}`,
+          icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
+        });
+        window.notified = true;
       }
-      localStorage.setItem("favoriteQuotes", JSON.stringify(favs));
-      if (favs.length >= 5) addBadge("⭐ 語錄收藏達人章");
-      renderFavoriteQuotes();
+      if (minutes > userSetMinutes) window.notified = false;
+    } else {
+      nextEl.innerHTML = "⏭️ 無下場比賽";
+      countdownEl.innerText = "";
+      reminderEl.innerText = "";
     }
+  }
 
-    function renderFavoriteQuotes() {
-      const favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
-      const box = document.getElementById("favoriteQuoteList");
-      if (favs.length === 0) {
-        box.innerText = "尚無收藏語錄";
-        return;
-      }
-      let html = "";
-      for (let i of favs) {
-        const quote = quotes[i];
-        html += `<div><span>💬 ${quote}</span> <button onclick="removeFavoriteQuote(${i})">❌ 移除</button></div>`;
-      }
-      box.innerHTML = html;
+  function getTodayQuote() {
+    const today = new Date();
+    const index = today.getDate() % quotes.length;
+    const quote = quotes[index];
+    document.getElementById("dailyQuote").innerText = quote;
+    localStorage.setItem("currentQuoteIndex", index);
+  }
+
+  function toggleFavoriteQuote() {
+    const index = localStorage.getItem("currentQuoteIndex");
+    let favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
+    if (favs.includes(index)) {
+      favs = favs.filter(i => i !== index);
+    } else {
+      favs.push(index);
     }
+    localStorage.setItem("favoriteQuotes", JSON.stringify(favs));
+    if (favs.length >= 5) addBadge("⭐ 語錄收藏達人章");
+    renderFavoriteQuotes();
+  }
 
-    function removeFavoriteQuote(index) {
-      let favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
-      favs = favs.filter(i => i != index);
-      localStorage.setItem("favoriteQuotes", JSON.stringify(favs));
-      renderFavoriteQuotes();
+  function renderFavoriteQuotes() {
+    const favs = JSON.parse(localStorage.getItem("favoriteQuotes") || "[]");
+    const box = document.getElementById("favoriteQuoteList");
+    if (favs.length === 0) {
+      box.innerText = "尚無收藏語錄";
+      return;
     }
+    box.innerHTML = favs.map(i => `<div>💬 ${quotes[i]}</div>`).join('');
+  }
 
-    function challengeQuote() {
-      let count = parseInt(localStorage.getItem("quoteChallenges") || "0") + 1;
-      localStorage.setItem("quoteChallenges", count);
-      if (count >= 10) addBadge("🧠 語錄挑戰達成章");
-      alert(`你已完成語錄挑戰 ${count} 次！`);
+  function challengeQuote() {
+    let count = parseInt(localStorage.getItem("quoteChallenges") || "0") + 1;
+    localStorage.setItem("quoteChallenges", count);
+    if (count >= 10) addBadge("🧠 語錄挑戰達成章");
+    alert(`你已完成語錄挑戰 ${count} 次！`);
+  }
+
+  function showSupportDays() {
+    const startDate = new Date("2024-11-24");
+    const today = new Date();
+    const diffTime = today - startDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    document.getElementById("fixedDaysResult").innerText = `你支持兄弟已經第 ${diffDays} 天啦 💛`;
+  }
+
+  function addBadge(name) {
+    const badgeBox = document.getElementById("badgeList");
+    if (!badgeBox.innerHTML.includes(name)) {
+      badgeBox.innerHTML += `<div class="badge">${name}</div>`;
     }
+  }
 
-    function showSupportDays() {
-      const startDate = new Date("2024-11-24");
-      const today = new Date();
-      const diffTime = today - startDate;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      document.getElementById("fixedDaysResult").innerText = `你支持兄弟已經第 ${diffDays} 天啦 💛`;
-      const matchDates = ["2024-11-24"];
-      const startStr = startDate.toISOString().split("T")[0];
-      if (matchDates.includes(startStr)) {
-        document.getElementById("specialBadge").innerHTML = `<span class="badge">🎖️ 特殊徽章：你在比賽日加入兄弟陣營！</span>`;
-        addBadge("比賽日加入章");
-      }
-    }
+  const reminderSelect = document.getElementById("reminderSelect");
+  const reminderStatus = document.getElementById("reminderStatus");
+  reminderSelect.addEventListener("change", () => {
+    const selected = reminderSelect.value;
+    localStorage.setItem("reminderMinutes", selected);
+    reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${selected} 分鐘`;
+  });
+  const savedReminder = localStorage.getItem("reminderMinutes") || "30";
+  reminderSelect.value = savedReminder;
+  reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${savedReminder} 分鐘`;
 
-    function addBadge(name) {
-      const badgeBox = document.getElementById("badgeList");
-      if (!badgeBox.innerHTML.includes(name)) {
-        badgeBox.innerHTML += `<div class="badge">${name}</div>`;
-      }
-    }
-
-function loadGameInfo() {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-  const now = new Date();
-
-  document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
-
-  const todayGame = gameList.find(g => g.date === todayStr);
-  const nextGame = gameList.find(g => {
-    const gameTime = new Date(`${g.date}T${g.time}`);
-    return gameTime > now && g.date !== todayStr;
+  const firebaseConfig = {
+    apiKey: "AIzaSyB4DjxxWFZvaN54loy0fzo010sxslXfMeg",
+    authDomain: "ffjj-67dcf.firebaseapp.com",
+    projectId: "ffjj-67dcf",
+    storageBucket: "ffjj-67dcf.appspot.com",
+    messagingSenderId: "572382978762",
+    appId: "1:572382978762:web:83302fb8bcbee65be5ca33"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const messaging = firebase.messaging();
+  navigator.serviceWorker.register("firebase-messaging-sw.js").then(reg => {
+    messaging.useServiceWorker(reg);
+    messaging.requestPermission()
+      .then(() => messaging.getToken({ vapidKey: "BF2_h3WIsDKtuLq6vGuIoLrpqsJwArlcYnMWAxelIA12E6Od8bu2vdKXF9EppAj4MER3LXUE6oZnEGB7nrXSYnI" }))
+      .then(token => document.getElementById("fcm-token").innerText = token)
+      .catch(() => document.getElementById("fcm-token").innerText = "❌ 無法取得通知權限");
   });
 
-  const todayEl = document.getElementById("todayGameInfo");
-  const nextEl = document.getElementById("nextGameInfo");
-  const countdownEl = document.getElementById("countdownTimer");
-  const reminderEl = document.getElementById("reminderInfo");
-
-  todayEl.innerHTML = todayGame
-    ? `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${formatMatchup(todayGame)}`
-    : "📍 今天無比賽";
-
-  if (nextGame) {
-    const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
-    const diff = targetTime - now;
-    const minutes = Math.floor(diff / (1000 * 60));
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff / (1000 * 60)) % 60);
-    const s = Math.floor((diff / 1000) % 60);
-
-    nextEl.innerHTML = `⏭️ <b>下場比賽</b>：${nextGame.date} ${nextGame.time}<br>${formatMatchup(nextGame)}`;
-    countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
-    reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
-
-    const userSetMinutes = parseInt(localStorage.getItem("reminderMinutes") || "30");
-    if (minutes === userSetMinutes && Notification.permission === "granted" && !notified) {
-      new Notification("🐘 比賽提醒", {
-        body: `距離比賽只剩 ${userSetMinutes} 分鐘！${formatMatchup(nextGame)}`,
-        icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
-      });
-      notified = true;
-    }
-    if (minutes > userSetMinutes) notified = false;
-  } else {
-    nextEl.innerHTML = "⏭️ 無下場比賽";
-    countdownEl.innerText = "";
-    reminderEl.innerText = "";
-  }
-}
-
-    const reminderSelect = document.getElementById("reminderSelect");
-    const reminderStatus = document.getElementById("reminderStatus");
-    reminderSelect.addEventListener("change", () => {
-      const selected = reminderSelect.value;
-      localStorage.setItem("reminderMinutes", selected);
-      reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${selected} 分鐘`;
-    });
-    const savedReminder = localStorage.getItem("reminderMinutes") || "30";
-    reminderSelect.value = savedReminder;
-    reminderStatus.innerText = `✅ 已設定提醒為比賽前 ${savedReminder} 分鐘`;
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4DjxxWFZvaN54loy0fzo010sxslXfMeg",
-      authDomain: "ffjj-67dcf.firebaseapp.com",
-      projectId: "ffjj-67dcf",
-      storageBucket: "ffjj-67dcf.firebasestorage.app",
-      messagingSenderId: "572382978762",
-      appId: "1:572382978762:web:83302fb8bcbee65be5ca33",
-      measurementId: "G-P8FYRJH421"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
-    navigator.serviceWorker.register("firebase-messaging-sw.js").then(reg => {
-      messaging.useServiceWorker(reg);
-      messaging.requestPermission()
-        .then(() => messaging.getToken({ vapidKey: "BF2_h3WIsDKtuLq6vGuIoLrpqsJwArlcYnMWAxelIA12E6Od8bu2vdKXF9EppAj4MER3LXUE6oZnEGB7nrXSYnI" }))
-        .then(token => document.getElementById("fcm-token").innerText = token)
-        .catch(() => document.getElementById("fcm-token").innerText = "❌ 無法取得通知權限");
-    });
-
-    getTodayQuote();
-    loadGameInfo();
-    setInterval(loadGameInfo, 1000);
-    showSupportDays();
-    renderFavoriteQuotes();
-  </script>
+  getTodayQuote();
+  loadGameInfo();
+  setInterval(loadGameInfo, 1000);
+  showSupportDays();
+  renderFavoriteQuotes();
+</script>
 </body>
 </html>
+
 
 
 
