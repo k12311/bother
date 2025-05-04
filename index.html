@@ -150,18 +150,34 @@
       "讓我們一起把主場守住！"
     ];
 
-    const gameList = [
-      { date: "2025-05-02", time: "18:35", opponent: "台鋼雄鷹", location: "嘉義" },
-      { date: "2025-05-03", time: "17:05", opponent: "富邦悍將", location: "台中" },
-      { date: "2025-05-05", time: "18:35", opponent: "樂天桃猿", location: "桃園" },
-      { date: "2025-05-06", time: "18:35", opponent: "統一獅", location: "新莊" }
-    ];
+   const gameList = [
+  { date: "2025-05-02", time: "18:35", opponent: "台鋼雄鷹", location: "嘉義市", home: false },
+  { date: "2025-05-03", time: "18:35", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
+  { date: "2025-05-04", time: "16:05", opponent: "台鋼雄鷹", location: "澄清湖", home: false },
+  { date: "2025-05-06", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
+  { date: "2025-05-07", time: "18:35", opponent: "統一獅", location: "洲際", home: true },
+  { date: "2025-05-09", time: "18:35", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-10", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-11", time: "17:05", opponent: "台鋼雄鷹", location: "洲際", home: true },
+  { date: "2025-05-13", time: "18:35", opponent: "味全龍", location: "天母", home: true },
+  { date: "2025-05-14", time: "18:35", opponent: "味全龍", location: "天母", home: true },
+  { date: "2025-05-16", time: "18:35", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-17", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-18", time: "17:05", opponent: "樂天桃猿", location: "洲際", home: true },
+  { date: "2025-05-21", time: "18:35", opponent: "富邦悍將", location: "洲際", home: true },
+  { date: "2025-05-22", time: "18:35", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-23", time: "18:35", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-24", time: "17:05", opponent: "統一獅", location: "台南", home: false },
+  { date: "2025-05-25", time: "17:05", opponent: "統一獅", location: "台南", home: false }
+];
 
     let notified = false;
 
-    function formatMatchup(game) {
-      return `中信兄弟 vs ${game.opponent}（${game.location}）`;
-    }
+   function formatMatchup(game) {
+  return game.home
+    ? `中信兄弟 vs ${game.opponent}（${game.location}）`
+    : `中信兄弟 @ ${game.opponent}（${game.location}）`;
+}
 
     function getTodayQuote() {
       const today = new Date();
