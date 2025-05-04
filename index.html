@@ -250,50 +250,55 @@
       }
     }
 
-    function loadGameInfo() {
-      const today = new Date();
-      document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
+function loadGameInfo() {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const now = new Date();
 
-      const todayStr = today.toISOString().split("T")[0];
-      const todayGame = gameList.find(g => g.date === todayStr);
-      const now = new Date();
+  document.getElementById("todayDate").innerText = `📅 今天是 ${today.getFullYear()} 年 ${today.getMonth() + 1} 月 ${today.getDate()} 日`;
 
-      const todayEl = document.getElementById("todayGameInfo");
-      const nextEl = document.getElementById("nextGameInfo");
-      const countdownEl = document.getElementById("countdownTimer");
-      const reminderEl = document.getElementById("reminderInfo");
+  const todayGame = gameList.find(g => g.date === todayStr);
+  const nextGame = gameList.find(g => {
+    const gameTime = new Date(`${g.date}T${g.time}`);
+    return gameTime > now && g.date !== todayStr;
+  });
 
-      const todayText = todayGame ? `📍 今天有比賽：${todayGame.date} ${todayGame.time} ${formatMatchup(todayGame)}` : "📍 今天無比賽";
-      todayEl.innerText = todayText;
+  const todayEl = document.getElementById("todayGameInfo");
+  const nextEl = document.getElementById("nextGameInfo");
+  const countdownEl = document.getElementById("countdownTimer");
+  const reminderEl = document.getElementById("reminderInfo");
 
-      const nextGame = gameList.find(g => new Date(`${g.date}T${g.time}`) > now);
-      if (nextGame) {
-        const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
-        const diff = targetTime - now;
-        const minutes = Math.floor(diff / (1000 * 60));
-        const h = Math.floor(diff / (1000 * 60 * 60));
-        const m = Math.floor((diff / (1000 * 60)) % 60);
-        const s = Math.floor((diff / 1000) % 60);
+  todayEl.innerHTML = todayGame
+    ? `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${formatMatchup(todayGame)}`
+    : "📍 今天無比賽";
 
-        nextEl.innerText = `⏭️ 下場比賽：${nextGame.date} ${nextGame.time} ${formatMatchup(nextGame)}`;
-        countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
-        reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+  if (nextGame) {
+    const targetTime = new Date(`${nextGame.date}T${nextGame.time}+08:00`);
+    const diff = targetTime - now;
+    const minutes = Math.floor(diff / (1000 * 60));
+    const h = Math.floor(diff / (1000 * 60 * 60));
+    const m = Math.floor((diff / (1000 * 60)) % 60);
+    const s = Math.floor((diff / 1000) % 60);
 
-        const userSetMinutes = parseInt(localStorage.getItem("reminderMinutes") || "30");
-        if (minutes === userSetMinutes && Notification.permission === "granted" && !notified) {
-          new Notification("🐘 比賽提醒", {
-            body: `距離比賽只剩 ${userSetMinutes} 分鐘！${formatMatchup(nextGame)}`,
-            icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
-          });
-          notified = true;
-        }
-        if (minutes > userSetMinutes) notified = false;
-      } else {
-        nextEl.innerText = "⏭️ 無下場比賽";
-        countdownEl.innerText = "";
-        reminderEl.innerText = "";
-      }
+    nextEl.innerHTML = `⏭️ <b>下場比賽</b>：${nextGame.date} ${nextGame.time}<br>${formatMatchup(nextGame)}`;
+    countdownEl.innerText = `⏳ ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+    reminderEl.innerText = `⏰ 距離開打：${minutes} 分鐘`;
+
+    const userSetMinutes = parseInt(localStorage.getItem("reminderMinutes") || "30");
+    if (minutes === userSetMinutes && Notification.permission === "granted" && !notified) {
+      new Notification("🐘 比賽提醒", {
+        body: `距離比賽只剩 ${userSetMinutes} 分鐘！${formatMatchup(nextGame)}`,
+        icon: "https://upload.wikimedia.org/wikipedia/zh/1/13/Chinatrust_Brothers_Logo.png"
+      });
+      notified = true;
     }
+    if (minutes > userSetMinutes) notified = false;
+  } else {
+    nextEl.innerHTML = "⏭️ 無下場比賽";
+    countdownEl.innerText = "";
+    reminderEl.innerText = "";
+  }
+}
 
     const reminderSelect = document.getElementById("reminderSelect");
     const reminderStatus = document.getElementById("reminderStatus");
