@@ -70,6 +70,7 @@
       font-size: 0.8rem;
       margin-top: 0.5rem;
     }
+
   </style>
 </head>
 <body>
@@ -235,34 +236,41 @@ function loadGameInfo() {
   const countdownEl = document.getElementById("countdownTimer");
   const reminderEl = document.getElementById("reminderInfo");
 
+  // === 找出今天的比賽 ===
   const todayGame = gameList.find(g => g.date === todayStr);
+
+  // === 找出下一場比賽（排除今天）===
   const upcomingGame = gameList.find(g => {
     const gameTime = new Date(`${g.date}T${g.time}+08:00`);
-    return gameTime > now;
+    return gameTime > now && g.date !== todayStr;
   });
 
-  // === 今天比賽狀態 ===
+  // === 顯示今天比賽資訊 ===
   if (todayGame) {
-    todayEl.innerHTML = `📍 <b>今天有比賽</b>：${todayGame.date} ${todayGame.time}<br>${getGameStyle(todayGame)}`;
+    todayEl.innerHTML = `
+      📍 <b>今天比賽</b>：${todayGame.date} ${todayGame.time}<br>
+      ${getGameStyle(todayGame)}
+    `;
+    showCountdown(todayGame, countdownEl, reminderEl);
   } else {
     todayEl.innerHTML = "📍 今天無比賽";
   }
 
-  // === 下場比賽區塊（永遠顯示） ===
+  // === 顯示下一場比賽（排除今天）===
   if (upcomingGame) {
-    nextEl.innerHTML = `<hr style='border:none; border-top:1px dashed #ccc; margin: 1em 0;'>⏭️ <b>下場比賽</b>：${upcomingGame.date} ${upcomingGame.time}<br>${getGameStyle(upcomingGame)}`;
+    nextEl.innerHTML = `
+      <hr style='border:none; border-top:1px dashed #ccc; margin: 1em 0;'>
+      ⏭️ <b>下場比賽</b>：${upcomingGame.date} ${upcomingGame.time}<br>
+      ${getGameStyle(upcomingGame)}
+    `;
   } else {
     nextEl.innerHTML = "⏭️ 無下場比賽";
   }
+}
 
-  // === 決定要倒數哪一場（今天優先） ===
-  const game = todayGame || upcomingGame;
-  if (!game) {
-    countdownEl.innerText = "⏳ 目前無任何比賽排程";
-    reminderEl.innerText = "";
-    return;
-  }
-
+// === 倒數計時函數 ===
+function showCountdown(game, countdownEl, reminderEl) {
+  const now = new Date();
   const gameTime = new Date(`${game.date}T${game.time}+08:00`);
   const diff = gameTime - now;
   const minutes = Math.floor(diff / (1000 * 60));
@@ -295,6 +303,9 @@ function loadGameInfo() {
     if (minutes > reminderMins) window.notified = false;
   }
 }
+
+loadGameInfo();
+setInterval(loadGameInfo, 1000);
 const reminderSelect = document.getElementById("reminderSelect");
 const reminderStatus = document.getElementById("reminderStatus");
 reminderSelect.addEventListener("change", () => {
